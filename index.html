@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Home Budget Tracker</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        /* Navigation bar */
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 25px 0;
+            padding: 15px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .nav-links .btn {
+            display: inline-block;
+            padding: 12px 22px;
+            background-color: #166534;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .nav-links .btn:hover {
+            background-color: #10b981;
+            transform: translateY(-2px);
+        }
+
+        .nav-links .active {
+            background-color: #10b981;
+        }
+
+        .page-footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px;
+            color: #666666;
+        }
+
+        @media (max-width: 600px) {
+            .nav-links {
+                flex-direction: column;
+            }
+
+            .nav-links .btn {
+                width: 80%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <!-- HEADER -->
+    <header>
+        <h1>Home Budget Tracker</h1>
+        <p class="subtitle">
+            Manage your income and expenses easily.
+        </p>
+    </header>
+
+    <!-- NAVIGATION -->
+    <nav class="nav-links">
+        <a class="btn active" href="{{ url_for('index') }}">
+            🏠 Home
+        </a>
+
+        <a class="btn" href="{{ url_for('analysis_dashboard') }}">
+            📊 View Analysis
+        </a>
+
+        <a class="btn" href="{{ url_for('budget_settings') }}">
+            💰 Monthly Budget
+        </a>
+    </nav>
+
+    <!-- SUMMARY CARDS -->
+    <div class="summary-cards">
+
+        <div class="card">
+            <h3>Total Income</h3>
+            <p class="income">
+                ₹{{ "%.2f"|format(total_income) }}
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Total Expenses</h3>
+            <p class="expense">
+                ₹{{ "%.2f"|format(total_expenses) }}
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Balance</h3>
+            <p class="balance">
+                ₹{{ "%.2f"|format(balance) }}
+            </p>
+        </div>
+
+    </div>
+
+    <!-- ADD TRANSACTION -->
+    <div class="form-card">
+        <h2>Add Transaction</h2>
+
+        <form action="{{ url_for('add_transaction') }}" method="POST">
+
+            <select name="type" required>
+                <option value="">Select Type</option>
+                <option value="income">Income</option>
+                <option value="expense">Expense</option>
+            </select>
+
+            <input type="text"
+                   name="description"
+                   placeholder="Description"
+                   required>
+
+            <select name="category" required>
+                <option value="Other">Other</option>
+                <option value="Food">Food</option>
+                <option value="Travel">Travel</option>
+                <option value="Shopping">Shopping</option>
+                <option value="Bills">Bills</option>
+                <option value="Education">Education</option>
+                <option value="Health">Health</option>
+                <option value="Salary">Salary</option>
+            </select>
+
+            <input type="number"
+                   name="amount"
+                   placeholder="Amount (₹)"
+                   min="0.01"
+                   step="0.01"
+                   required>
+
+            <input type="date"
+                   name="transaction_date"
+                   required>
+
+            <button type="submit">Add Transaction</button>
+
+        </form>
+    </div>
+
+    <!-- MONTH FILTER -->
+    <div class="form-card">
+        <h2>Filter Transactions by Month</h2>
+
+        <form action="{{ url_for('index') }}" method="GET">
+
+            <select name="month">
+                <option value="all"
+                    {% if selected_month == 'all' %}selected{% endif %}>
+                    All Months
+                </option>
+
+                {% for year in range(2024, 2031) %}
+                    {% for month in range(1, 13) %}
+                        {% set month_value = "%04d-%02d"|format(year, month) %}
+
+                        <option value="{{ month_value }}"
+                            {% if selected_month == month_value %}selected{% endif %}>
+                            {{ month_value }}
+                        </option>
+                    {% endfor %}
+                {% endfor %}
+            </select>
+
+            <button type="submit">Apply Filter</button>
+
+            <a class="btn" href="{{ url_for('index') }}">Reset</a>
+
+        </form>
+    </div>
+
+    <!-- INCOME TABLE -->
+    <h2>Income Transactions</h2>
+
+    <div class="table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for transaction in income_transactions %}
+                <tr>
+                    <td>{{ transaction.transaction_date }}</td>
+                    <td>{{ transaction.description }}</td>
+                    <td>{{ transaction.category or 'Other' }}</td>
+                    <td>₹{{ "%.2f"|format(transaction.amount) }}</td>
+
+                    <td>
+                        <div class="actions">
+
+                            <a class="btn"
+                               href="{{ url_for('edit_transaction', transaction_id=transaction.id) }}">
+                                Edit
+                            </a>
+
+                            <form
+                                action="{{ url_for('delete_transaction', transaction_id=transaction.id) }}"
+                                method="POST"
+                                onsubmit="return confirm('Delete this income transaction?');">
+
+                                <button type="submit" class="delete-btn">
+                                    Delete
+                                </button>
+
+                            </form>
+
+                        </div>
+                    </td>
+                </tr>
+
+                {% else %}
+                <tr>
+                    <td colspan="5">No income transactions found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+            <tfoot>
+                <tr>
+                    <th colspan="3">Total Income</th>
+                    <th>₹{{ "%.2f"|format(total_income) }}</th>
+                    <th></th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <!-- EXPENSE TABLE -->
+    <h2>Expense Transactions</h2>
+
+    <div class="table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for transaction in expense_transactions %}
+                <tr>
+                    <td>{{ transaction.transaction_date }}</td>
+                    <td>{{ transaction.description }}</td>
+                    <td>{{ transaction.category or 'Other' }}</td>
+                    <td>₹{{ "%.2f"|format(transaction.amount) }}</td>
+
+                    <td>
+                        <div class="actions">
+
+                            <a class="btn"
+                               href="{{ url_for('edit_transaction', transaction_id=transaction.id) }}">
+                                Edit
+                            </a>
+
+                            <form
+                                action="{{ url_for('delete_transaction', transaction_id=transaction.id) }}"
+                                method="POST"
+                                onsubmit="return confirm('Delete this expense transaction?');">
+
+                                <button type="submit" class="delete-btn">
+                                    Delete
+                                </button>
+
+                            </form>
+
+                        </div>
+                    </td>
+                </tr>
+
+                {% else %}
+                <tr>
+                    <td colspan="5">No expense transactions found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+            <tfoot>
+                <tr>
+                    <th colspan="3">Total Expenses</th>
+                    <th>₹{{ "%.2f"|format(total_expenses) }}</th>
+                    <th></th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <!-- CATEGORY-WISE EXPENSE SUMMARY -->
+    <h2>Category-wise Expense Summary</h2>
+
+    <div class="table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Total Expenses</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for item in category_expenses %}
+                <tr>
+                    <td>{{ item.category }}</td>
+                    <td>₹{{ "%.2f"|format(item.total) }}</td>
+                </tr>
+
+                {% else %}
+                <tr>
+                    <td colspan="2">No expense categories found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+            <tfoot>
+                <tr>
+                    <th>Total Expenses</th>
+                    <th>₹{{ "%.2f"|format(total_expenses) }}</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="page-footer">
+        <p>Home Budget Tracker | Manage your money smartly.</p>
+    </footer>
+
+</div>
+</body>
+</html>
