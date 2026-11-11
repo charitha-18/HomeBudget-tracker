@@ -1,5 +1,0 @@
-Flask
-mysql-connector-python
-pandas
-plotly
-gunicorn
