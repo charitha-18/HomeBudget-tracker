@@ -1,0 +1,734 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Smart Budget Planner | Home Budget Tracker</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --navy: #14213d;
+            --blue: #2563eb;
+            --blue-hover: #1d4ed8;
+            --background: #f1f5f9;
+            --white: #ffffff;
+            --text: #243b5a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --green: #059669;
+            --red: #dc2626;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* NAVIGATION */
+
+        .navbar {
+            background: linear-gradient(120deg, #0f172a, #1e3a8a);
+            padding: 18px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            flex-wrap: wrap;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.15);
+        }
+
+        .brand {
+            color: white;
+            font-size: 22px;
+            font-weight: 800;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 11px 12px;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            background: var(--blue);
+        }
+
+        .nav-links .logout-btn {
+            background: #dc2626;
+        }
+
+        .nav-links .logout-btn:hover {
+            background: #b91c1c;
+        }
+
+        /* MAIN CONTAINER */
+
+        .container {
+            max-width: 1250px;
+            margin: auto;
+            padding: 35px 25px;
+        }
+
+        .page-header {
+            margin-bottom: 28px;
+        }
+
+        .page-header h1 {
+            color: var(--navy);
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .page-header p {
+            color: var(--muted);
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        /* CARDS */
+
+        .card {
+            background: white;
+            padding: 27px;
+            margin-bottom: 26px;
+            border-radius: 17px;
+            border: 1px solid #e5eaf2;
+            box-shadow: 0 5px 20px rgba(20, 33, 61, 0.05);
+        }
+
+        .card h2 {
+            color: var(--navy);
+            font-size: 21px;
+            margin-bottom: 20px;
+        }
+
+        .section-description {
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.7;
+            margin-bottom: 22px;
+        }
+
+        /* SALARY INFORMATION */
+
+        .salary-info {
+            background: #eff6ff;
+            border-left: 5px solid var(--blue);
+            padding: 17px;
+            border-radius: 10px;
+            margin-bottom: 22px;
+            color: #1e40af;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        /* FORMS */
+
+        label {
+            display: block;
+            margin-bottom: 9px;
+            color: var(--text);
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        input {
+            width: 100%;
+            min-height: 46px;
+            padding: 12px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 9px;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text);
+            background: white;
+            outline: none;
+            margin-bottom: 17px;
+        }
+
+        input:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        /* BUTTONS */
+
+        button {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        .primary {
+            background: var(--blue);
+            color: white;
+        }
+
+        .primary:hover {
+            background: var(--blue-hover);
+        }
+
+        .approve {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .approve:hover {
+            background: #bbf7d0;
+        }
+
+        .reject {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .reject:hover {
+            background: #fecaca;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        /* FLASH MESSAGES */
+
+        .flash-message {
+            padding: 14px 17px;
+            margin-bottom: 18px;
+            border-radius: 9px;
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+            font-size: 14px;
+        }
+
+        .flash-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-color: #fecaca;
+        }
+
+        /* SUGGESTION CARDS */
+
+        .suggestion {
+            border: 1px solid #e2e8f0;
+            border-left: 5px solid var(--blue);
+            padding: 23px;
+            margin-bottom: 20px;
+            background: #fbfdff;
+            border-radius: 12px;
+            transition: 0.2s;
+        }
+
+        .suggestion:hover {
+            box-shadow: 0 7px 20px rgba(15, 23, 42, 0.07);
+        }
+
+        .suggestion:last-child {
+            margin-bottom: 0;
+        }
+
+        .suggestion h3 {
+            color: var(--navy);
+            font-size: 20px;
+            margin-bottom: 14px;
+            text-transform: capitalize;
+        }
+
+        .suggestion p {
+            margin: 12px 0;
+            color: #52645a;
+            line-height: 1.7;
+            font-size: 14px;
+        }
+
+        .month {
+            display: inline-block;
+            background: #dbeafe;
+            color: #1d4ed8;
+            padding: 7px 13px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .reason-box {
+            background: #eff6ff;
+            border-left: 4px solid var(--blue);
+            padding: 16px;
+            border-radius: 8px;
+            margin: 17px 0;
+            color: #1e40af;
+            line-height: 1.7;
+        }
+
+        .reason-box strong {
+            font-size: 14px;
+        }
+
+        .reason-box p {
+            margin-bottom: 0;
+        }
+
+        .status {
+            display: inline-block;
+            font-weight: bold;
+            color: #92400e;
+            background: #fef3c7;
+            padding: 7px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .empty {
+            color: var(--muted);
+            padding: 25px 10px;
+            text-align: center;
+            line-height: 1.8;
+        }
+
+        .empty-icon {
+            display: block;
+            font-size: 38px;
+            margin-bottom: 12px;
+        }
+
+        /* GROCERY SECTION */
+
+        .grocery-info {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .grocery-info p {
+            color: #52645a;
+            line-height: 1.8;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .grocery-link {
+            display: inline-block;
+            margin-top: 8px;
+            color: var(--blue);
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .grocery-link:hover {
+            color: var(--blue-hover);
+            text-decoration: underline;
+        }
+
+        /* FOOTER */
+
+        .footer {
+            text-align: center;
+            padding: 22px;
+            color: var(--muted);
+            font-size: 13px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* RESPONSIVE */
+
+        @media (max-width: 1000px) {
+            .navbar {
+                justify-content: center;
+            }
+
+            .nav-links {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .navbar {
+                padding: 18px 12px;
+            }
+
+            .brand {
+                font-size: 20px;
+            }
+
+            .nav-links {
+                gap: 5px;
+            }
+
+            .nav-links a {
+                padding: 9px 10px;
+                font-size: 12px;
+            }
+
+            .container {
+                padding: 24px 13px;
+            }
+
+            .page-header h1 {
+                font-size: 26px;
+            }
+
+            .card {
+                padding: 20px 15px;
+                border-radius: 13px;
+            }
+
+            .card h2 {
+                font-size: 19px;
+            }
+
+            .suggestion {
+                padding: 18px 14px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .button-group button,
+            .primary {
+                width: 100%;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <!-- NAVIGATION -->
+
+    <nav class="navbar">
+
+        <a href="{{ url_for('index') }}" class="brand">
+            💰 Home Budget Tracker
+        </a>
+
+        <div class="nav-links">
+
+            <a href="{{ url_for('index') }}">Dashboard</a>
+
+            <a href="{{ url_for('transactions_page') }}">Transactions</a>
+
+            <a href="{{ url_for('analysis_dashboard') }}">Analysis</a>
+
+            <a href="{{ url_for('budget_settings') }}">Monthly Budget</a>
+
+            <a href="{{ url_for('compare_months') }}">Compare Months</a>
+
+            <a href="{{ url_for('category_budgets') }}">Category Budgets</a>
+
+            <a href="{{ url_for('smart_budget') }}" class="active">
+                Smart Budget
+            </a>
+
+            <a href="{{ url_for('grocery_manager') }}">Grocery Manager</a>
+
+            <a href="{{ url_for('money_planner') }}">Money Planner</a>
+
+            <a href="{{ url_for('logout') }}" class="logout-btn">
+                Logout
+            </a>
+
+        </div>
+
+    </nav>
+
+
+    <main class="container">
+
+        <!-- PAGE HEADING -->
+
+        <header class="page-header">
+
+            <h1>🧠 Smart Budget Planner</h1>
+
+            <p>
+                Understand your spending and get intelligent budget recommendations.
+                Plan your future expenses with smarter decisions.
+            </p>
+
+        </header>
+
+
+        <!-- FLASH MESSAGES -->
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+
+            {% for category, message in messages %}
+
+                <div class="flash-message
+                    {% if category == 'error' %}flash-error{% endif %}">
+
+                    {{ message }}
+
+                </div>
+
+            {% endfor %}
+
+        {% endwith %}
+
+
+        <!-- MONTHLY SALARY -->
+
+        <section class="card">
+
+            <h2>💰 Monthly Salary</h2>
+
+            <div class="salary-info">
+
+                Enter your monthly salary to generate personalized
+                budget recommendations based on your spending patterns.
+
+            </div>
+
+            <form method="POST" action="{{ url_for('smart_budget') }}">
+
+                <label for="salary">
+                    Enter Your Monthly Salary (₹)
+                </label>
+
+                <input
+                    type="number"
+                    id="salary"
+                    name="salary"
+                    min="1"
+                    step="0.01"
+                    placeholder="Enter your monthly salary"
+                    value="{{ current_salary if current_salary else '' }}"
+                    required
+                >
+
+                <button type="submit" class="primary">
+                    Save Salary & Generate Suggestions
+                </button>
+
+            </form>
+
+        </section>
+
+
+        <!-- BUDGET RECOMMENDATIONS -->
+
+        <section class="card">
+
+            <h2>📊 Smart Budget Recommendations</h2>
+
+            <p class="section-description">
+                Review the recommended category budgets. You can adjust,
+                approve, or reject each recommendation.
+            </p>
+
+            {% if suggestions %}
+
+                {% for suggestion in suggestions %}
+
+                    <article class="suggestion">
+
+                        <h3>🏷️ {{ suggestion.category }}</h3>
+
+
+                        <!-- BUDGET MONTH -->
+
+                        <div class="month">
+
+                            📅 Budget Month:
+                            {{ suggestion.suggestion_month }}
+
+                        </div>
+
+
+                        <!-- CURRENT BUDGET -->
+
+                        <p>
+
+                            <strong>Current Budget:</strong>
+
+                            ₹{{ "%.2f"|format(suggestion.current_budget|float) }}
+
+                        </p>
+
+
+                        <!-- RECOMMENDED BUDGET FORM -->
+
+                        <form
+                            method="POST"
+                            action="{{ url_for('handle_suggestion',
+                            suggestion_id=suggestion.id) }}"
+                        >
+
+                            <label>
+                                Recommended Budget (₹)
+                            </label>
+
+                            <input
+                                type="number"
+                                name="suggested_budget"
+                                min="0.01"
+                                step="0.01"
+                                value="{{ suggestion.suggested_budget }}"
+                                required
+                            >
+
+
+                            <!-- REASON -->
+
+                            <div class="reason-box">
+
+                                <strong>💡 Why this recommendation?</strong>
+
+                                <p>
+                                    {{ suggestion.reason }}
+                                </p>
+
+                            </div>
+
+
+                            <!-- STATUS -->
+
+                            <p>
+                                <span class="status">
+                                    Status: {{ suggestion.status|upper }}
+                                </span>
+                            </p>
+
+
+                            <!-- APPROVE AND REJECT -->
+
+                            <div class="button-group">
+
+                                <button
+                                    type="submit"
+                                    name="action"
+                                    value="approve"
+                                    class="approve"
+                                >
+                                    ✓ Approve Budget
+                                </button>
+
+                                <button
+                                    type="submit"
+                                    name="action"
+                                    value="reject"
+                                    class="reject"
+                                >
+                                    ✕ Reject Suggestion
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                    </article>
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="empty">
+
+                    <span class="empty-icon">💡</span>
+
+                    <strong>No budget suggestions yet.</strong>
+
+                    <p>
+                        Enter your monthly salary above to generate
+                        personalized budget recommendations.
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        </section>
+
+
+        <!-- GROCERY INFORMATION -->
+
+        <section class="card">
+
+            <h2>🛒 Grocery Budget Intelligence</h2>
+
+            <div class="grocery-info">
+
+                <p>
+                    Your grocery budget recommendations can consider the
+                    remaining grocery stock planned for the upcoming month.
+                </p>
+
+                <p>
+                    The system calculates the remaining grocery stock value
+                    and reduces the recommended grocery budget accordingly.
+                </p>
+
+                <p>
+                    You can edit, approve, or reject the recommendation
+                    before your actual category budget is updated.
+                </p>
+
+                <a
+                    href="{{ url_for('grocery_manager') }}"
+                    class="grocery-link"
+                >
+                    Open Grocery Manager →
+                </a>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- FOOTER -->
+
+    <footer class="footer">
+
+        Home Budget Tracker · Plan Smart. Spend Wisely. 💙
+
+    </footer>
+
+</body>
+</html>

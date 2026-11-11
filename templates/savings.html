@@ -1,0 +1,443 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Savings Goal Tracker</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f1f5f9;
+            color: #1e293b;
+            font-size: 14px;
+        }
+
+        /* Navigation */
+        nav {
+            background: #0f172a;
+            padding: 18px 7%;
+            display: flex;
+            align-items: center;
+        }
+
+        nav h2 {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* Main Container */
+        .container {
+            width: 90%;
+            max-width: 1100px;
+            margin: 35px auto;
+        }
+
+        /* Page Heading */
+        .heading {
+            margin-bottom: 25px;
+        }
+
+        .heading h1 {
+            color: #0f172a;
+            margin-bottom: 8px;
+            font-size: 30px;
+            font-weight: bold;
+        }
+
+        .heading p {
+            color: #64748b;
+            font-size: 15px;
+        }
+
+        /* Create Goal Card */
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.05);
+        }
+
+        .card h2 {
+            margin-bottom: 20px;
+            color: #0f172a;
+            font-size: 22px;
+        }
+
+        /* Form */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #1e293b;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            outline: none;
+            font-size: 14px;
+            color: #1e293b;
+        }
+
+        input:focus {
+            border-color: #2563eb;
+        }
+
+        /* Buttons */
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 11px 18px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .create-btn {
+            margin-top: 18px;
+        }
+
+        /* Goals Grid */
+        .goals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        /* Individual Goal Card */
+        .goal-card {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.05);
+        }
+
+        .goal-card h3 {
+            color: #0f172a;
+            margin-bottom: 15px;
+            font-size: 19px;
+        }
+
+        /* Saved Amount */
+        .amount {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2563eb;
+            margin-bottom: 8px;
+        }
+
+        .muted {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        /* Progress Bar */
+        .progress-bg {
+            background: #e2e8f0;
+            height: 12px;
+            border-radius: 20px;
+            overflow: hidden;
+            margin: 12px 0;
+        }
+
+        .progress-fill {
+            background: #16a34a;
+            height: 100%;
+            border-radius: 20px;
+        }
+
+        .progress-text {
+            font-size: 14px;
+            font-weight: bold;
+            color: #16a34a;
+            margin-bottom: 18px;
+        }
+
+        /* Add Savings */
+        .contribute-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .contribute-form input {
+            min-width: 0;
+        }
+
+        /* Delete Button */
+        .delete-btn {
+            background: #dc2626;
+            margin-top: 15px;
+        }
+
+        .delete-btn:hover {
+            background: #b91c1c;
+        }
+
+        /* Completed Goal */
+        .completed {
+            color: #16a34a;
+            font-weight: bold;
+            font-size: 15px;
+            margin-bottom: 12px;
+        }
+
+        /* Empty State */
+        .empty {
+            text-align: center;
+            padding: 35px;
+            color: #64748b;
+            background: white;
+            border-radius: 12px;
+        }
+
+        .empty h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #334155;
+        }
+
+        .empty p {
+            font-size: 14px;
+        }
+
+        /* Flash Messages */
+        .message {
+            padding: 12px;
+            border-radius: 7px;
+            margin-bottom: 15px;
+            background: #dcfce7;
+            color: #166534;
+            font-size: 14px;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Responsive Design */
+        @media(max-width: 700px) {
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .heading h1 {
+                font-size: 25px;
+            }
+
+            .card {
+                padding: 18px;
+            }
+
+            .contribute-form {
+                flex-direction: column;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+
+
+<!-- Main Content -->
+<div class="container">
+
+    <div class="heading">
+        <h1>Savings Goal Tracker</h1>
+        <p>Set your financial goals, save regularly and track your progress.</p>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="message {% if category == 'error' %}error{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endwith %}
+
+    <!-- Create Savings Goal -->
+    <div class="card">
+
+        <h2>Create New Savings Goal</h2>
+
+        <form action="{{ url_for('create_savings_goal') }}" method="POST">
+
+            <div class="form-grid">
+
+                <div>
+                    <label>Goal Name</label>
+
+                    <input type="text"
+                           name="goal_name"
+                           placeholder="Example: Buy a Laptop"
+                           maxlength="100"
+                           required>
+                </div>
+
+                <div>
+                    <label>Target Amount (₹)</label>
+
+                    <input type="number"
+                           name="target_amount"
+                           min="0.01"
+                           step="0.01"
+                           placeholder="50000"
+                           required>
+                </div>
+
+                <div>
+                    <label>Target Date</label>
+
+                    <input type="date"
+                           name="target_date">
+                </div>
+
+            </div>
+
+            <button type="submit" class="create-btn">
+                Create Goal
+            </button>
+
+        </form>
+
+    </div>
+
+    <!-- My Savings Goals -->
+    <h2 style="margin-bottom:20px; font-size:22px;">
+        My Savings Goals
+    </h2>
+
+    {% if goals %}
+
+        <div class="goals-grid">
+
+            {% for goal in goals %}
+
+                <div class="goal-card">
+
+                    <h3>{{ goal.goal_name }}</h3>
+
+                    {% if goal.completed %}
+                        <p class="completed">
+                            Goal Completed!
+                        </p>
+                    {% endif %}
+
+                    <div class="amount">
+                        ₹{{ "%.2f"|format(goal.saved_amount) }}
+                    </div>
+
+                    <p class="muted">
+                        Saved out of ₹{{ "%.2f"|format(goal.target_amount) }}
+                    </p>
+
+                    <!-- Progress Bar -->
+                    <div class="progress-bg">
+
+                        <div class="progress-fill"
+                             style="width: {{ goal.progress }}%;">
+                        </div>
+
+                    </div>
+
+                    <p class="progress-text">
+                        {{ goal.progress }}% Completed
+                    </p>
+
+                    <p class="muted">
+                        Remaining: ₹{{ "%.2f"|format(goal.remaining_amount) }}
+                    </p>
+
+                    <p class="muted">
+                        Target Date:
+                        {{ goal.target_date.strftime('%d-%m-%Y') if goal.target_date else 'Not set' }}
+                    </p>
+
+                    <!-- Add Savings -->
+                    {% if not goal.completed %}
+
+                        <form class="contribute-form"
+                              action="{{ url_for('contribute_savings', goal_id=goal.id) }}"
+                              method="POST">
+
+                            <input type="number"
+                                   name="amount"
+                                   min="0.01"
+                                   step="0.01"
+                                   placeholder="Add amount ₹"
+                                   required>
+
+                            <button type="submit">
+                                Add
+                            </button>
+
+                        </form>
+
+                    {% endif %}
+
+                    <!-- Delete Goal -->
+                    <form action="{{ url_for('remove_savings_goal', goal_id=goal.id) }}"
+                          method="POST"
+                          onsubmit="return confirm('Are you sure you want to delete this goal?');">
+
+                        <button type="submit" class="delete-btn">
+                            Delete Goal
+                        </button>
+
+                    </form>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div class="empty">
+
+            <h3>No Savings Goals Yet</h3>
+
+            <p>
+                Create your first savings goal above to start tracking your progress.
+            </p>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+</body>
+</html>

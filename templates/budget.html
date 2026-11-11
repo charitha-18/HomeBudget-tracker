@@ -1,0 +1,1228 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Monthly Budget | Home Budget Tracker</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body.budget-page {
+            margin: 0;
+            padding: 0;
+            background: #f1f5f9;
+            color: #172554;
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+
+        /* NAVIGATION */
+
+        .navbar {
+            background: linear-gradient(120deg, #0f172a, #1e3a8a);
+            color: white;
+            padding: 18px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.18);
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .nav-links a {
+            color: #e8edf7;
+            text-decoration: none;
+            padding: 10px 13px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        .nav-links .logout-btn {
+            background: #dc2626;
+            color: white;
+        }
+
+        .nav-links .logout-btn:hover {
+            background: #b91c1c;
+        }
+
+        /* MAIN CONTAINER */
+
+        .budget-page .container {
+            max-width: 1400px;
+            margin: 35px auto;
+            padding: 25px;
+        }
+
+        .budget-header {
+            margin-bottom: 28px;
+        }
+
+        .budget-header h1 {
+            color: #14213d;
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #718096;
+            font-size: 15px;
+        }
+
+        /* COMMON CARDS */
+
+        .form-card,
+        .budget-page .card {
+            background: white;
+            padding: 25px;
+            margin: 25px 0;
+            border: none;
+            border-radius: 18px;
+            box-shadow: 0 5px 22px rgba(15, 23, 42, 0.055);
+        }
+
+        h2 {
+            color: #14213d;
+            font-size: 21px;
+            font-weight: 750;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        .section-description {
+            color: #718096;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        /* BUDGET FORM */
+
+        .budget-form-card form {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+
+        .form-group label {
+            font-weight: 700;
+            color: #334155;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #d5deeb;
+            border-radius: 9px;
+            font-size: 14px;
+            background: white;
+            outline: none;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        .save-budget-btn {
+            grid-column: 1 / -1;
+            width: fit-content;
+            padding: 13px 25px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 9px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .save-budget-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+        }
+
+        /* SUMMARY CARDS */
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .budget-summary-card {
+            background: white;
+            padding: 25px;
+            border-radius: 18px;
+            box-shadow: 0 5px 22px rgba(15, 23, 42, 0.055);
+            transition: transform 0.25s ease;
+        }
+
+        .budget-summary-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .budget-summary-card:nth-child(1) {
+            border-top: 4px solid #3b82f6;
+        }
+
+        .budget-summary-card:nth-child(2) {
+            border-top: 4px solid #ef4444;
+        }
+
+        .budget-summary-card:nth-child(3) {
+            border-top: 4px solid #10b981;
+        }
+
+        .summary-icon {
+            font-size: 28px;
+            margin-bottom: 12px;
+        }
+
+        .budget-summary-card h3 {
+            color: #64748b;
+            font-size: 15px;
+            margin-bottom: 12px;
+        }
+
+        .budget-summary-card p {
+            font-size: 26px;
+            font-weight: 800;
+            margin: 0;
+            overflow-wrap: anywhere;
+        }
+
+        .income {
+            color: #059669;
+        }
+
+        .expense {
+            color: #dc2626;
+        }
+
+        .balance {
+            color: #2563eb;
+        }
+
+        /* PROGRESS SECTION */
+
+        .section-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .section-title-row h2 {
+            margin-bottom: 8px;
+        }
+
+        .usage-badge,
+        .transaction-count {
+            display: inline-block;
+            padding: 8px 13px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .usage-safe {
+            background: #d1fae5;
+            color: #047857;
+        }
+
+        .usage-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .usage-danger {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .budget-amount-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 20px 0 12px;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .budget-amount-row strong {
+            color: #172554;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 15px;
+            background: #e2e8f0;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 22px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #10b981;
+            border-radius: 20px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-bar.near-budget {
+            background: #f59e0b;
+        }
+
+        .progress-bar.over-budget {
+            background: #ef4444;
+        }
+
+        /* STATUS MESSAGES */
+
+        .budget-status {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 17px;
+            border-radius: 12px;
+        }
+
+        .status-icon {
+            font-size: 24px;
+        }
+
+        .budget-status h3 {
+            margin: 0 0 7px;
+            font-size: 16px;
+        }
+
+        .budget-status p {
+            margin: 0;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .status-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* EMPTY BUDGET */
+
+        .budget-empty-card {
+            text-align: center;
+            padding: 40px 25px;
+        }
+
+        .empty-budget-icon {
+            font-size: 45px;
+            margin-bottom: 15px;
+        }
+
+        .budget-empty-card p {
+            color: #718096;
+            line-height: 1.7;
+        }
+
+        /* TRANSFER BUDGET TO SAVINGS */
+
+        .transfer-card {
+            border-left: 5px solid #10b981;
+        }
+
+        .transfer-info {
+            background: #ecfdf5;
+            padding: 18px;
+            border-radius: 12px;
+            margin: 18px 0;
+            color: #065f46;
+            line-height: 1.7;
+        }
+
+        .transfer-info strong {
+            font-size: 20px;
+        }
+
+        .transfer-form {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 18px;
+        }
+
+        .transfer-btn {
+            width: fit-content;
+            padding: 13px 25px;
+            background: #059669;
+            color: white;
+            border: none;
+            border-radius: 9px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .transfer-btn:hover {
+            background: #047857;
+            transform: translateY(-2px);
+        }
+
+        .transfer-note {
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-top: 15px;
+        }
+
+        /* TRANSACTION TABLE */
+
+        .transaction-count {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .budget-table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .budget-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 850px;
+        }
+
+        .budget-table thead {
+            background: #1e3a8a;
+            color: white;
+        }
+
+        .budget-table th,
+        .budget-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e9edf5;
+            font-size: 14px;
+        }
+
+        .budget-table th {
+            font-size: 13px;
+            letter-spacing: 0.3px;
+        }
+
+        .budget-table tbody tr {
+            transition: background 0.2s;
+        }
+
+        .budget-table tbody tr:hover {
+            background: #eff6ff;
+        }
+
+        .transaction-description {
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 6px 10px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .type-badge {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .type-income {
+            background: #d1fae5;
+            color: #047857;
+        }
+
+        .type-expense {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .transaction-amount {
+            font-weight: 800;
+            white-space: nowrap;
+            color: #334155;
+        }
+
+        .delete-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .delete-btn:hover {
+            background: #b91c1c;
+            transform: translateY(-2px);
+        }
+
+        .transaction-delete-form {
+            margin: 0;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 35px !important;
+            color: #718096;
+        }
+
+        .empty-table-icon {
+            font-size: 35px;
+            margin-bottom: 10px;
+        }
+
+        .empty-message p {
+            margin-top: 8px;
+        }
+
+        /* FOOTER */
+
+        .page-footer {
+            text-align: center;
+            color: #718096;
+            padding: 25px;
+            margin-top: 30px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+
+        /* RESPONSIVE */
+
+        @media (max-width: 900px) {
+            .summary-cards {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 600px) {
+            .navbar {
+                padding: 18px;
+            }
+
+            .brand {
+                font-size: 20px;
+            }
+
+            .nav-links a {
+                padding: 9px;
+                font-size: 12px;
+            }
+
+            .budget-page .container {
+                padding: 15px;
+                margin: 20px auto;
+            }
+
+            .budget-header h1 {
+                font-size: 26px;
+            }
+
+            .summary-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .budget-form-card form {
+                grid-template-columns: 1fr;
+            }
+
+            .save-budget-btn,
+            .transfer-btn {
+                width: 100%;
+            }
+
+            .form-card,
+            .budget-page .card {
+                padding: 18px;
+            }
+
+            .budget-amount-row {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body class="budget-page">
+
+<!-- NAVIGATION -->
+
+<nav class="navbar">
+
+    <div class="brand">💰 Home Budget Tracker</div>
+
+    <div class="nav-links">
+
+        <a href="{{ url_for('index') }}">Dashboard</a>
+
+        <a href="{{ url_for('transactions_page') }}">Transactions</a>
+
+        <a href="{{ url_for('analysis_dashboard') }}">Analysis</a>
+
+        <a href="{{ url_for('budget_settings') }}" class="active">
+            Monthly Budget
+        </a>
+
+        <a href="{{ url_for('compare_months') }}">Compare Months</a>
+
+        <a href="{{ url_for('category_budgets') }}">Category Budgets</a>
+
+        <a href="{{ url_for('smart_budget') }}">Smart Budget</a>
+
+        <a href="{{ url_for('grocery_manager') }}">Grocery Manager</a>
+
+        <a href="{{ url_for('money_planner') }}">Money Planner</a>
+
+        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+
+    </div>
+
+</nav>
+
+
+<div class="container">
+
+    <!-- PAGE HEADING -->
+
+    <header class="budget-header">
+
+        <h1>Monthly Budget Planner</h1>
+
+        <p class="subtitle">
+            Plan your spending, track your expenses, and stay within your budget.
+        </p>
+
+    </header>
+
+
+    <!-- SET MONTHLY BUDGET -->
+
+    <section class="form-card budget-form-card">
+
+        <h2>📅 Set Monthly Budget</h2>
+
+        <p class="section-description">
+            Select a month and enter the amount you plan to spend.
+        </p>
+
+        <form action="{{ url_for('budget_settings') }}" method="POST">
+
+            <div class="form-group">
+
+                <label for="month">Select Month</label>
+
+                <input
+                    type="month"
+                    id="month"
+                    name="month"
+                    value="{{ selected_month }}"
+                    required
+                >
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="budget_limit">Budget Amount (₹)</label>
+
+                <input
+                    type="number"
+                    id="budget_limit"
+                    name="budget_limit"
+                    placeholder="Enter budget amount"
+                    min="0.01"
+                    step="0.01"
+                    value="{{ budget_limit if budget_limit > 0 else '' }}"
+                    required
+                >
+
+            </div>
+
+            <button type="submit" class="save-budget-btn">
+                Save Budget
+            </button>
+
+        </form>
+
+    </section>
+
+
+    <!-- SUMMARY CARDS -->
+
+    <section class="summary-cards">
+
+        <div class="budget-summary-card">
+
+            <div class="summary-icon">🎯</div>
+
+            <h3>Monthly Budget</h3>
+
+            <p class="balance">
+                ₹{{ "%.2f"|format(budget_limit) }}
+            </p>
+
+        </div>
+
+        <div class="budget-summary-card">
+
+            <div class="summary-icon">💸</div>
+
+            <h3>Total Expenses</h3>
+
+            <p class="expense">
+                ₹{{ "%.2f"|format(total_expenses) }}
+            </p>
+
+        </div>
+
+        <div class="budget-summary-card">
+
+            <div class="summary-icon">💰</div>
+
+            <h3>Remaining Budget</h3>
+
+            <p class="{{ 'expense' if remaining < 0 else 'income' }}">
+                ₹{{ "%.2f"|format(remaining) }}
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- BUDGET PROGRESS -->
+
+    {% if budget_limit > 0 %}
+
+    <section class="form-card budget-progress-card">
+
+        <div class="section-title-row">
+
+            <div>
+
+                <h2>📊 Budget Usage</h2>
+
+                <p class="section-description">
+                    Track how much of your monthly budget has been spent.
+                </p>
+
+            </div>
+
+            <span class="usage-badge
+                {% if usage_percent >= 100 %}
+                    usage-danger
+                {% elif usage_percent >= 80 %}
+                    usage-warning
+                {% else %}
+                    usage-safe
+                {% endif %}">
+                {{ usage_percent }}% Used
+            </span>
+
+        </div>
+
+
+        <div class="budget-amount-row">
+
+            <span>
+                Spent:
+                <strong>₹{{ "%.2f"|format(total_expenses) }}</strong>
+            </span>
+
+            <span>
+                Budget:
+                <strong>₹{{ "%.2f"|format(budget_limit) }}</strong>
+            </span>
+
+        </div>
+
+
+        <div
+            class="progress-container"
+            role="progressbar"
+            aria-label="Monthly budget usage"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="{{ [usage_percent, 100]|min }}"
+        >
+
+            <div
+                class="progress-bar
+                    {% if usage_percent >= 100 %}
+                        over-budget
+                    {% elif usage_percent >= 80 %}
+                        near-budget
+                    {% endif %}"
+                style="width: {{ [usage_percent, 100]|min }}%;">
+            </div>
+
+        </div>
+
+
+        {% if total_expenses > budget_limit %}
+
+            <div class="budget-status status-danger">
+
+                <span class="status-icon">⚠️</span>
+
+                <div>
+
+                    <h3>Budget Exceeded!</h3>
+
+                    <p>
+                        You have exceeded your budget by
+                        <strong>
+                            ₹{{ "%.2f"|format(total_expenses - budget_limit) }}
+                        </strong>.
+                        Consider reducing your spending.
+                    </p>
+
+                </div>
+
+            </div>
+
+        {% elif total_expenses == budget_limit %}
+
+            <div class="budget-status status-warning">
+
+                <span class="status-icon">⚠️</span>
+
+                <div>
+
+                    <h3>Budget Limit Reached!</h3>
+
+                    <p>
+                        You have used your entire monthly budget.
+                    </p>
+
+                </div>
+
+            </div>
+
+        {% else %}
+
+            <div class="budget-status status-success">
+
+                <span class="status-icon">✅</span>
+
+                <div>
+
+                    <h3>Within Budget!</h3>
+
+                    <p>
+                        You still have
+                        <strong>
+                            ₹{{ "%.2f"|format(remaining) }}
+                        </strong>
+                        available to spend.
+                    </p>
+
+                </div>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+    {% else %}
+
+    <section class="form-card budget-empty-card">
+
+        <div class="empty-budget-icon">🎯</div>
+
+        <h2>Set Your Monthly Budget</h2>
+
+        <p>
+            Enter a budget amount above to start tracking your spending.
+            Your progress and remaining balance will appear here.
+        </p>
+
+    </section>
+
+    {% endif %}
+
+
+    <!-- TRANSFER REMAINING BUDGET TO SAVINGS -->
+
+    <section class="form-card transfer-card">
+
+        <h2>🎯 Transfer Remaining Budget to Savings</h2>
+
+        <p class="section-description">
+            Instead of leaving your unused money idle, transfer it into one
+            of your savings goals.
+        </p>
+
+        <div class="transfer-info">
+
+            <div>Available amount to transfer</div>
+
+            <strong>
+                ₹{{ "%.2f"|format([remaining, 0]|max) }}
+            </strong>
+
+        </div>
+
+        {% if budget_limit > 0 and remaining > 0 and savings_goals %}
+
+            <form
+                class="transfer-form"
+                action="{{ url_for('transfer_budget_to_savings') }}"
+                method="POST"
+                onsubmit="return confirm('Are you sure you want to transfer your remaining budget to this savings goal?');"
+            >
+
+                <input
+                    type="hidden"
+                    name="month"
+                    value="{{ selected_month }}"
+                >
+
+                <div class="form-group">
+
+                    <label for="goal_id">
+                        Select Your Savings Goal
+                    </label>
+
+                    <select
+                        id="goal_id"
+                        name="goal_id"
+                        required
+                    >
+
+                        <option value="">
+                            Choose a savings goal
+                        </option>
+
+                        {% for goal in savings_goals %}
+
+                            {% if not goal.completed and goal.remaining_amount > 0 %}
+
+                                <option value="{{ goal.id }}">
+
+                                    {{ goal.goal_name }}
+                                    — Remaining:
+                                    ₹{{ "%.2f"|format(goal.remaining_amount) }}
+
+                                </option>
+
+                            {% endif %}
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+                <button type="submit" class="transfer-btn">
+                    💰 Transfer to Savings
+                </button>
+
+            </form>
+
+            <p class="transfer-note">
+                Note: The transfer amount will not exceed your remaining
+                monthly budget or the amount required to complete your
+                selected savings goal.
+            </p>
+
+        {% elif not savings_goals %}
+
+            <div class="budget-status status-warning">
+
+                <span class="status-icon">ℹ️</span>
+
+                <div>
+
+                    <h3>No Savings Goals Found</h3>
+
+                    <p>
+                        Create a savings goal first. Then you can transfer
+                        your remaining monthly budget into it.
+                    </p>
+
+                </div>
+
+            </div>
+
+        {% elif remaining <= 0 %}
+
+            <div class="budget-status status-warning">
+
+                <span class="status-icon">⚠️</span>
+
+                <div>
+
+                    <h3>No Remaining Budget</h3>
+
+                    <p>
+                        You need a positive remaining balance to transfer
+                        money into savings.
+                    </p>
+
+                </div>
+
+            </div>
+
+        {% else %}
+
+            <div class="budget-status status-warning">
+
+                <span class="status-icon">ℹ️</span>
+
+                <div>
+
+                    <h3>All Savings Goals Completed</h3>
+
+                    <p>
+                        Create another savings goal to transfer your
+                        remaining budget.
+                    </p>
+
+                </div>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- MONTHLY TRANSACTIONS -->
+
+    <section class="form-card transaction-heading">
+
+        <div class="section-title-row">
+
+            <div>
+
+                <h2>🧾 Monthly Transactions</h2>
+
+                <p class="section-description">
+                    Transactions recorded for {{ selected_month }}.
+                </p>
+
+            </div>
+
+            <span class="transaction-count">
+
+                {% if transactions %}
+                    {{ transactions|length }} Transactions
+                {% else %}
+                    0 Transactions
+                {% endif %}
+
+            </span>
+
+        </div>
+
+
+        <div class="budget-table-container">
+
+            <table class="budget-table">
+
+                <thead>
+
+                    <tr>
+                        <th>ID</th>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% if transactions %}
+
+                        {% for transaction in transactions %}
+
+                        <tr>
+
+                            <td>{{ transaction.id }}</td>
+
+                            <td class="transaction-description">
+                                {{ transaction.description or 'No description' }}
+                            </td>
+
+                            <td>
+
+                                <span class="category-badge">
+                                    {{ transaction.category or 'Uncategorized' }}
+                                </span>
+
+                            </td>
+
+                            <td>
+
+                                {% if transaction.type|string|lower == 'expense' %}
+
+                                    <span class="type-badge type-expense">
+                                        Expense
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="type-badge type-income">
+                                        Income
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td class="transaction-amount">
+                                ₹{{ "%.2f"|format(transaction.amount) }}
+                            </td>
+
+                            <td>{{ transaction.transaction_date }}</td>
+
+                            <td>
+
+                                <form
+                                    class="transaction-delete-form"
+                                    action="{{ url_for('delete_transaction', transaction_id=transaction.id) }}"
+                                    method="POST"
+                                    onsubmit="return confirm('Are you sure you want to delete this transaction?');"
+                                >
+
+                                    <input
+                                        type="hidden"
+                                        name="month"
+                                        value="{{ selected_month }}"
+                                    >
+
+                                    <button
+                                        type="submit"
+                                        class="delete-btn"
+                                    >
+                                        Delete
+                                    </button>
+
+                                </form>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    {% else %}
+
+                        <tr>
+
+                            <td colspan="7" class="empty-message">
+
+                                <div class="empty-table-icon">📭</div>
+
+                                <strong>No transactions found</strong>
+
+                                <p>
+                                    There are no transactions recorded for
+                                    {{ selected_month }}.
+                                </p>
+
+                            </td>
+
+                        </tr>
+
+                    {% endif %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- FOOTER -->
+
+    <footer class="page-footer">
+
+        <p>
+            Home Budget Tracker · Plan Smart. Spend Wisely. 💚
+        </p>
+
+    </footer>
+
+</div>
+
+</body>
+</html>

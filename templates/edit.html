@@ -1,0 +1,85 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Edit Transaction | Home Budget Tracker</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+<div class="container">
+
+    <h1>Edit Transaction</h1>
+    <p class="subtitle">Update your income or expense details.</p>
+
+    <div class="nav-links">
+        <a class="btn" href="{{ url_for('index') }}">Back to Home</a>
+    </div>
+
+    <div class="form-card">
+        <h2>Update Details</h2>
+
+        <form action="{{ url_for('edit_transaction', transaction_id=transaction.id) }}"
+              method="POST">
+
+            <select name="type" required>
+                <option value="income"
+                    {% if transaction.type == 'income' %}selected{% endif %}>
+                    Income
+                </option>
+
+                <option value="expense"
+                    {% if transaction.type == 'expense' %}selected{% endif %}>
+                    Expense
+                </option>
+            </select>
+
+            <input type="text"
+                   name="description"
+                   placeholder="Description"
+                   value="{{ transaction.description }}"
+                   required>
+
+            <select name="category" required>
+                {% for category_name in
+                    ['Food', 'Travel', 'Shopping', 'Bills',
+                     'Education', 'Health', 'Salary', 'Other'] %}
+
+                    <option value="{{ category_name }}"
+                        {% if (transaction.category or 'Other') == category_name %}
+                            selected
+                        {% endif %}>
+                        {{ category_name }}
+                    </option>
+
+                {% endfor %}
+            </select>
+
+            <input type="number"
+                   name="amount"
+                   placeholder="Amount (₹)"
+                   value="{{ transaction.amount }}"
+                   min="0.01"
+                   step="0.01"
+                   required>
+
+            <input type="date"
+                   name="transaction_date"
+                   value="{{ transaction.transaction_date }}"
+                   required>
+
+            <button type="submit">Update Transaction</button>
+
+            <a class="btn" href="{{ url_for('index') }}">Cancel</a>
+
+        </form>
+    </div>
+
+</div>
+</body>
+</html>

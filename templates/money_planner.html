@@ -1,0 +1,967 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Money Planner | Home Budget Tracker</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --navy: #14213d;
+            --blue: #2563eb;
+            --blue-hover: #1d4ed8;
+            --background: #f1f5f9;
+            --text: #243b5a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --green: #059669;
+            --red: #dc2626;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* NAVIGATION */
+
+        .navbar {
+            background: linear-gradient(120deg, #0f172a, #1e3a8a);
+            padding: 18px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            flex-wrap: wrap;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.15);
+        }
+
+        .brand {
+            color: white;
+            font-size: 22px;
+            font-weight: 800;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 11px 12px;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            background: var(--blue);
+        }
+
+        .nav-links .logout-btn {
+            background: #dc2626;
+        }
+
+        .nav-links .logout-btn:hover {
+            background: #b91c1c;
+        }
+
+        /* MAIN CONTAINER */
+
+        .container {
+            max-width: 1400px;
+            margin: auto;
+            padding: 35px 25px;
+        }
+
+        .page-header {
+            margin-bottom: 28px;
+        }
+
+        .page-header h1 {
+            color: var(--navy);
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .page-header p {
+            color: var(--muted);
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        /* CARDS */
+
+        .card {
+            background: white;
+            padding: 27px;
+            margin-bottom: 25px;
+            border-radius: 17px;
+            border: 1px solid #e5eaf2;
+            box-shadow: 0 5px 20px rgba(20, 33, 61, 0.05);
+        }
+
+        .card h2 {
+            color: var(--navy);
+            font-size: 21px;
+            margin-bottom: 17px;
+        }
+
+        .section-description {
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+
+        /* FLASH MESSAGES */
+
+        .flash {
+            padding: 14px 17px;
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+            border-radius: 9px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        /* MONTH SELECTION */
+
+        .month-form {
+            display: flex;
+            gap: 13px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .month-form label {
+            font-weight: 700;
+            color: var(--navy);
+            font-size: 14px;
+        }
+
+        input {
+            min-height: 44px;
+            padding: 11px 13px;
+            border: 1px solid #cbd5e1;
+            border-radius: 9px;
+            font-family: inherit;
+            font-size: 14px;
+            color: var(--text);
+            background: white;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        /* BUTTONS */
+
+        button,
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 17px;
+            border: none;
+            border-radius: 8px;
+            background: var(--blue);
+            color: white;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover,
+        .btn:hover {
+            background: var(--blue-hover);
+            transform: translateY(-2px);
+        }
+
+        .carry-btn {
+            background: #2563eb;
+        }
+
+        .savings-btn {
+            background: #059669;
+        }
+
+        .savings-btn:hover {
+            background: #047857;
+        }
+
+        .unused-btn {
+            background: #64748b;
+        }
+
+        .unused-btn:hover {
+            background: #475569;
+        }
+
+        .generate-btn {
+            background: #14213d;
+        }
+
+        .generate-btn:hover {
+            background: #1e3a8a;
+        }
+
+        /* SUMMARY CARDS */
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .summary .card {
+            margin-bottom: 0;
+            border-top: 4px solid var(--blue);
+            transition: 0.2s;
+        }
+
+        .summary .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 9px 22px rgba(20, 33, 61, 0.09);
+        }
+
+        .summary h3 {
+            color: var(--muted);
+            font-size: 14px;
+            margin-bottom: 13px;
+        }
+
+        .amount {
+            font-size: 25px;
+            font-weight: 800;
+            color: var(--navy);
+            overflow-wrap: anywhere;
+        }
+
+        .income-card {
+            border-top-color: var(--green) !important;
+        }
+
+        .income-card .amount {
+            color: var(--green);
+        }
+
+        .expense-card {
+            border-top-color: var(--red) !important;
+        }
+
+        .expense-card .amount {
+            color: var(--red);
+        }
+
+        .balance-card {
+            border-top-color: var(--blue) !important;
+        }
+
+        .balance-card .amount {
+            color: var(--blue);
+        }
+
+        /* CATEGORY DETAILS */
+
+        .category-row {
+            border-bottom: 1px solid var(--border);
+            padding: 21px 0;
+        }
+
+        .category-row:last-child {
+            border-bottom: none;
+        }
+
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 13px;
+        }
+
+        .category-header strong {
+            color: var(--navy);
+            font-size: 16px;
+            text-transform: capitalize;
+        }
+
+        .category-header span {
+            color: var(--muted);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .category-row p {
+            font-size: 14px;
+            line-height: 1.8;
+            margin-bottom: 7px;
+        }
+
+        .success {
+            color: #047857;
+            font-weight: 700;
+        }
+
+        .warning {
+            color: #b45309;
+            font-weight: 700;
+        }
+
+        .muted {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 9px;
+            margin-top: 13px;
+        }
+
+        .actions form {
+            margin: 0;
+        }
+
+        /* SUGGESTION BOX */
+
+        .suggestion-box {
+            background: #f8faff;
+            border: 1px solid #dbeafe;
+            border-left: 5px solid var(--blue);
+            padding: 21px;
+            border-radius: 11px;
+            margin-top: 17px;
+        }
+
+        .suggestion-box h3 {
+            color: var(--navy);
+            font-size: 17px;
+            margin-bottom: 12px;
+            text-transform: capitalize;
+        }
+
+        .suggestion-box p {
+            color: var(--text);
+            font-size: 14px;
+            line-height: 1.8;
+            margin-top: 7px;
+        }
+
+        .suggestion-link {
+            display: inline-block;
+            margin-top: 12px;
+            color: var(--blue);
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .suggestion-link:hover {
+            text-decoration: underline;
+        }
+
+        .status {
+            display: inline-block;
+            background: #fef3c7;
+            color: #92400e;
+            padding: 6px 11px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* EMPTY STATE */
+
+        .empty {
+            text-align: center;
+            padding: 25px 12px;
+            color: var(--muted);
+            line-height: 1.8;
+            font-size: 14px;
+        }
+
+        .empty-icon {
+            display: block;
+            font-size: 35px;
+            margin-bottom: 10px;
+        }
+
+        /* FOOTER */
+
+        .footer {
+            text-align: center;
+            padding: 22px;
+            color: var(--muted);
+            font-size: 13px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* RESPONSIVE */
+
+        @media (max-width: 1000px) {
+            .navbar {
+                justify-content: center;
+            }
+
+            .nav-links {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .summary {
+                grid-template-columns: 1fr;
+            }
+
+            .navbar {
+                padding: 18px 12px;
+            }
+
+            .brand {
+                font-size: 20px;
+            }
+
+            .nav-links {
+                gap: 5px;
+            }
+
+            .nav-links a {
+                padding: 9px 10px;
+                font-size: 12px;
+            }
+
+            .container {
+                padding: 24px 13px;
+            }
+
+            .page-header h1 {
+                font-size: 26px;
+            }
+
+            .card {
+                padding: 20px 15px;
+            }
+
+            .card h2 {
+                font-size: 19px;
+            }
+
+            .month-form {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .month-form input,
+            .month-form button {
+                width: 100%;
+            }
+
+            .category-header {
+                flex-direction: column;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .actions button,
+            .actions .btn {
+                width: 100%;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <!-- NAVIGATION -->
+
+    <nav class="navbar">
+
+        <a href="{{ url_for('index') }}" class="brand">
+            💰 Home Budget Tracker
+        </a>
+
+        <div class="nav-links">
+
+            <a href="{{ url_for('index') }}">Dashboard</a>
+
+            <a href="{{ url_for('transactions_page') }}">Transactions</a>
+
+            <a href="{{ url_for('analysis_dashboard') }}">Analysis</a>
+
+            <a href="{{ url_for('budget_settings') }}">Monthly Budget</a>
+
+            <a href="{{ url_for('compare_months') }}">Compare Months</a>
+
+            <a href="{{ url_for('category_budgets') }}">Category Budgets</a>
+
+            <a href="{{ url_for('smart_budget') }}">Smart Budget</a>
+
+            <a href="{{ url_for('grocery_manager') }}">Grocery Manager</a>
+
+            <a href="{{ url_for('money_planner') }}" class="active">
+                Money Planner
+            </a>
+
+            <a href="{{ url_for('logout') }}" class="logout-btn">
+                Logout
+            </a>
+
+        </div>
+
+    </nav>
+
+
+    <main class="container">
+
+        <!-- PAGE HEADING -->
+
+        <header class="page-header">
+
+            <h1>💰 Money Planner</h1>
+
+            <p>
+                Manage your income, unused budget, overspending,
+                savings, and future budgets.
+            </p>
+
+        </header>
+
+
+        <!-- FLASH MESSAGES -->
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+
+            {% if messages %}
+
+                {% for category, message in messages %}
+
+                    <div class="flash">
+                        {{ message }}
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+        {% endwith %}
+
+
+        <!-- MONTH SELECTION -->
+
+        <section class="card">
+
+            <h2>📅 Select Budget Month</h2>
+
+            <p class="section-description">
+                Choose a month to review your financial position and
+                manage your category budget decisions.
+            </p>
+
+            <form
+                method="GET"
+                action="{{ url_for('money_planner') }}"
+                class="month-form"
+            >
+
+                <label for="month">
+                    Select Month:
+                </label>
+
+                <input
+                    type="month"
+                    id="month"
+                    name="month"
+                    value="{{ selected_month }}"
+                    required
+                >
+
+                <button type="submit">
+                    View Budget
+                </button>
+
+            </form>
+
+        </section>
+
+
+        <!-- MONTHLY SUMMARY -->
+
+        <section class="summary">
+
+            <div class="card income-card">
+
+                <h3>💵 Monthly Income</h3>
+
+                <div class="amount">
+                    ₹{{ "%.2f"|format(income|default(0)|float) }}
+                </div>
+
+            </div>
+
+            <div class="card expense-card">
+
+                <h3>💸 Monthly Expenses</h3>
+
+                <div class="amount">
+                    ₹{{ "%.2f"|format(expenses|default(0)|float) }}
+                </div>
+
+            </div>
+
+            <div class="card balance-card">
+
+                <h3>💰 Available Balance</h3>
+
+                <div class="amount">
+                    ₹{{ "%.2f"|format(
+                        (income|default(0)|float) -
+                        (expenses|default(0)|float)
+                    ) }}
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- CATEGORY BUDGET DETAILS -->
+
+        <section class="card">
+
+            <h2>📊 Category Budget Details</h2>
+
+            <p class="section-description">
+                Review unused money and overspending for each category.
+                Decide how to manage the remaining amount.
+            </p>
+
+            {% if budgets %}
+
+                {% for item in budgets %}
+
+                    <div class="category-row">
+
+                        <div class="category-header">
+
+                            <strong>
+                                🏷️ {{ item.category }}
+                            </strong>
+
+                            <span>
+                                Budget:
+                                ₹{{ "%.2f"|format(item.budget_limit|float) }}
+                            </span>
+
+                        </div>
+
+                        <p>
+                            <strong>Spent:</strong>
+                            ₹{{ "%.2f"|format(item.spent|float) }}
+                        </p>
+
+
+                        {% if item.remaining >= 0 %}
+
+                            <p class="success">
+                                ✓ Unused:
+                                ₹{{ "%.2f"|format(item.remaining|float) }}
+                            </p>
+
+                        {% else %}
+
+                            <p class="warning">
+                                ⚠ Overspent:
+                                ₹{{ "%.2f"|format(item.overspent|float) }}
+                            </p>
+
+                        {% endif %}
+
+
+                        {% if item.adjustment %}
+
+                            <p class="muted">
+                                Decision recorded:
+                                {{ item.adjustment.adjustment_type|replace('_', ' ')|title }}
+                                (₹{{ "%.2f"|format(item.adjustment.amount|float) }})
+                            </p>
+
+                        {% elif item.remaining > 0 %}
+
+                            <p class="muted">
+                                Choose what to do with your unused budget:
+                            </p>
+
+                            <form
+                                method="POST"
+                                action="{{ url_for('handle_unused_money', budget_id=item.id) }}"
+                                class="actions"
+                            >
+
+                                <input
+                                    type="hidden"
+                                    name="month"
+                                    value="{{ selected_month }}"
+                                >
+
+                                <button
+                                    type="submit"
+                                    name="action"
+                                    value="carry_forward"
+                                    class="carry-btn"
+                                >
+                                    ↪ Carry Forward
+                                </button>
+
+                                <button
+                                    type="submit"
+                                    name="action"
+                                    value="savings"
+                                    class="savings-btn"
+                                >
+                                    ✓ Move to Savings
+                                </button>
+
+                                <button
+                                    type="submit"
+                                    name="action"
+                                    value="leave_unused"
+                                    class="unused-btn"
+                                >
+                                    Leave Unused
+                                </button>
+
+                            </form>
+
+                        {% else %}
+
+                            <p class="muted">
+                                No unused amount available.
+                            </p>
+
+                        {% endif %}
+
+                    </div>
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="empty">
+
+                    <span class="empty-icon">📂</span>
+
+                    <strong>No category budgets found for this month.</strong>
+
+                    <p>
+                        Add category budgets first to manage your unused money.
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        </section>
+
+
+        <!-- OVERSPENDING SUGGESTIONS -->
+
+        <section class="card">
+
+            <h2>🧠 Overspending Suggestions</h2>
+
+            <p class="section-description">
+                Calculate overspending and generate recommendations
+                for the next month's category budgets.
+            </p>
+
+            <form
+                method="POST"
+                action="{{ url_for('generate_money_suggestions') }}"
+            >
+
+                <input
+                    type="hidden"
+                    name="month"
+                    value="{{ selected_month }}"
+                >
+
+                <button type="submit" class="generate-btn">
+                    ✨ Generate Suggestions
+                </button>
+
+            </form>
+
+
+            {% if pending_suggestions %}
+
+                {% for suggestion in pending_suggestions %}
+
+                    <div class="suggestion-box">
+
+                        <h3>🏷️ {{ suggestion.category }}</h3>
+
+                        <p>
+                            <strong>Suggested Budget:</strong>
+
+                            ₹{{ "%.2f"|format(suggestion.suggested_budget|float) }}
+                        </p>
+
+                        <p class="muted">
+                            {{ suggestion.reason }}
+                        </p>
+
+                        <p>
+                            <strong>Target Month:</strong>
+                            {{ suggestion.suggestion_month }}
+                        </p>
+
+                        <p style="margin-top: 12px;">
+                            <span class="status">
+                                Status: {{ suggestion.status|title }}
+                            </span>
+                        </p>
+
+                        <a
+                            href="{{ url_for('smart_budget') }}"
+                            class="suggestion-link"
+                        >
+                            Review in Smart Budget →
+                        </a>
+
+                    </div>
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="empty">
+
+                    <span class="empty-icon">💡</span>
+
+                    <strong>No pending suggestions for the next month.</strong>
+
+                    <p>
+                        Click Generate Suggestions to calculate overspending.
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        </section>
+
+
+        <!-- SAVED MONEY DECISIONS -->
+
+        <section class="card">
+
+            <h2>📜 Money Adjustment History</h2>
+
+            <p class="section-description">
+                View your previously recorded decisions for unused category budgets.
+            </p>
+
+            {% if adjustments %}
+
+                {% for adjustment in adjustments %}
+
+                    <div class="category-row">
+
+                        <div class="category-header">
+
+                            <strong>
+                                🏷️ {{ adjustment.category }}
+                            </strong>
+
+                            <span>
+                                ₹{{ "%.2f"|format(adjustment.amount|float) }}
+                            </span>
+
+                        </div>
+
+                        <p>
+                            <strong>Decision:</strong>
+                            {{ adjustment.adjustment_type|replace('_', ' ')|title }}
+                        </p>
+
+                        <p>
+                            <strong>Amount:</strong>
+                            ₹{{ "%.2f"|format(adjustment.amount|float) }}
+                        </p>
+
+                        <p class="muted">
+                            Target month: {{ adjustment.target_month }}
+                        </p>
+
+                        <p class="muted">
+                            {{ adjustment.reason }}
+                        </p>
+
+                    </div>
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="empty">
+
+                    <span class="empty-icon">📋</span>
+
+                    <strong>No money adjustment decisions recorded.</strong>
+
+                    <p>
+                        Your saved money decisions will appear here.
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        </section>
+
+    </main>
+
+
+    <!-- FOOTER -->
+
+    <footer class="footer">
+
+        Home Budget Tracker · Plan Smart. Save More. Spend Wisely. 💙
+
+    </footer>
+
+</body>
+</html>

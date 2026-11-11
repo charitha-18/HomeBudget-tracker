@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Budget Analysis | Home Budget Tracker</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #f3f6fb;
+            color: #243047;
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+
+        /* NAVIGATION */
+
+        .navbar {
+            background: linear-gradient(120deg, #0f172a, #1e3a8a);
+            color: white;
+            padding: 18px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.18);
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .nav-links a {
+            color: #e8edf7;
+            text-decoration: none;
+            padding: 10px 13px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        .nav-links .logout-btn {
+            background: #dc2626;
+            color: white;
+        }
+
+        /* MAIN CONTAINER */
+
+        .analysis-container {
+            max-width: 1400px;
+            margin: auto;
+            padding: 35px 25px;
+        }
+
+        .page-header {
+            margin-bottom: 25px;
+        }
+
+        .page-header h1 {
+            color: #14213d;
+            font-size: 34px;
+            margin-bottom: 8px;
+        }
+
+        .page-header p {
+            color: #64748b;
+        }
+
+        /* CARDS */
+
+        .form-card,
+        .chart-card,
+        .table-card,
+        .summary-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 5px 20px rgba(15, 23, 42, 0.06);
+        }
+
+        .form-card,
+        .chart-card,
+        .table-card {
+            padding: 25px;
+            margin: 25px 0;
+        }
+
+        h2 {
+            color: #14213d;
+            font-size: 21px;
+            margin-top: 0;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e5eaf2;
+        }
+
+        /* MONTH FILTER */
+
+        .filter-form {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .filter-form select {
+            flex: 1;
+            min-width: 200px;
+            padding: 13px;
+            border: 1px solid #cbd5e1;
+            border-radius: 9px;
+            font-size: 15px;
+            background: white;
+        }
+
+        button,
+        .btn {
+            display: inline-block;
+            padding: 13px 21px;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 9px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover,
+        .btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+        }
+
+        .reset-btn {
+            background: #e8eefc;
+            color: #1e3a8a;
+        }
+
+        .reset-btn:hover {
+            background: #dbeafe;
+            color: #1e3a8a;
+        }
+
+        /* SUMMARY CARDS */
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            margin: 25px 0;
+        }
+
+        .summary-card {
+            padding: 24px;
+            border-top: 5px solid #2563eb;
+            transition: transform 0.25s ease,
+                        box-shadow 0.25s ease;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+        }
+
+        .summary-card:nth-child(1) {
+            border-top-color: #10b981;
+        }
+
+        .summary-card:nth-child(2) {
+            border-top-color: #ef4444;
+        }
+
+        .summary-card:nth-child(3) {
+            border-top-color: #2563eb;
+        }
+
+        .summary-card:nth-child(4) {
+            border-top-color: #8b5cf6;
+        }
+
+        .summary-card h3 {
+            margin: 0 0 14px;
+            color: #64748b;
+            font-size: 15px;
+        }
+
+        .summary-card p {
+            margin: 0;
+            font-size: 25px;
+            font-weight: 800;
+            overflow-wrap: anywhere;
+        }
+
+        .income {
+            color: #059669;
+        }
+
+        .expense {
+            color: #dc5252;
+        }
+
+        .balance {
+            color: #2563eb;
+        }
+
+        .savings {
+            color: #7c3aed;
+        }
+
+        /* TABLE */
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .analysis-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        .analysis-table thead {
+            background: #1e3a8a;
+            color: white;
+        }
+
+        .analysis-table th,
+        .analysis-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e5eaf2;
+        }
+
+        .analysis-table tbody tr:hover {
+            background: #eff6ff;
+        }
+
+        .amount {
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        /* CHARTS */
+
+        .chart-card {
+            overflow: hidden;
+        }
+
+        .chart-content {
+            width: 100%;
+            min-width: 0;
+            min-height: 300px;
+        }
+
+        .chart-content .plotly-graph-div {
+            width: 100% !important;
+            max-width: 100%;
+        }
+
+        .empty-message {
+            padding: 20px;
+            background: #eff6ff;
+            color: #64748b;
+            text-align: center;
+            border-radius: 10px;
+        }
+
+        /* SALARY INFORMATION */
+
+        .salary-summary {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .salary-box {
+            background: #eff6ff;
+            border-left: 4px solid #2563eb;
+            padding: 18px;
+            border-radius: 10px;
+        }
+
+        .salary-box h3 {
+            margin: 0 0 10px;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .salary-box p {
+            margin: 0;
+            color: #1e3a8a;
+            font-size: 21px;
+            font-weight: 800;
+        }
+
+        /* FINANCIAL INSIGHTS */
+
+        .financial-insights {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .financial-insights li {
+            background: #eff6ff;
+            border-left: 4px solid #2563eb;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            line-height: 1.6;
+            color: #334155;
+        }
+
+        .financial-insights li:last-child {
+            margin-bottom: 0;
+        }
+
+        /* FOOTER */
+
+        .page-footer {
+            text-align: center;
+            color: #64748b;
+            padding: 20px;
+            margin-top: 30px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        /* RESPONSIVE DESIGN */
+
+        @media (max-width: 900px) {
+            .summary-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .salary-summary {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 550px) {
+            .navbar {
+                padding: 18px;
+            }
+
+            .analysis-container {
+                padding: 20px 14px;
+            }
+
+            .page-header h1 {
+                font-size: 27px;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-card,
+            .chart-card,
+            .table-card {
+                padding: 16px;
+            }
+
+            .filter-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-form select,
+            .filter-form button,
+            .filter-form .btn {
+                width: 100%;
+                text-align: center;
+            }
+
+            .analysis-table th,
+            .analysis-table td {
+                padding: 10px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVIGATION BAR -->
+
+    <nav class="navbar">
+
+        <div class="brand">💰 Home Budget Tracker</div>
+
+        <div class="nav-links">
+
+            <a href="{{ url_for('index') }}">Dashboard</a>
+
+            <a href="{{ url_for('transactions_page') }}">Transactions</a>
+
+            <a href="{{ url_for('analysis_dashboard') }}"
+               class="active">Analysis</a>
+
+            <a href="{{ url_for('budget_settings') }}">Monthly Budget</a>
+
+            <a href="{{ url_for('compare_months') }}">Compare Months</a>
+
+            <a href="{{ url_for('category_budgets') }}">Category Budgets</a>
+
+            <a href="{{ url_for('smart_budget') }}">Smart Budget</a>
+
+            <a href="{{ url_for('grocery_manager') }}">Grocery Manager</a>
+
+            <a href="{{ url_for('money_planner') }}">Money Planner</a>
+            <a href="{{ url_for('unusual_expenses') }}">Expense Alerts</a>
+
+            <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+
+        </div>
+
+    </nav>
+
+
+    <div class="analysis-container">
+
+        <!-- PAGE HEADER -->
+
+        <header class="page-header">
+
+            <h1>📊 Home Budget Analysis</h1>
+
+            <p>
+                Understand your income, expenses, salary and savings.
+            </p>
+
+        </header>
+
+
+        <!-- MONTH FILTER -->
+
+        <section class="form-card">
+
+            <h2>📅 Filter Analysis by Month</h2>
+
+            <form class="filter-form"
+                  action="{{ url_for('analysis_dashboard') }}"
+                  method="GET">
+
+                <select name="month"
+                        aria-label="Filter analysis by month">
+
+                    <option value="all"
+                        {% if selected_month == 'all' %}selected{% endif %}>
+                        All Months
+                    </option>
+
+                    {% for year in range(2024, 2031) %}
+                        {% for month in range(1, 13) %}
+
+                            {% set month_value = "%04d-%02d"|format(year, month) %}
+
+                            <option value="{{ month_value }}"
+                                {% if selected_month == month_value %}selected{% endif %}>
+                                {{ month_value }}
+                            </option>
+
+                        {% endfor %}
+                    {% endfor %}
+
+                </select>
+
+                <button type="submit">Apply Filter</button>
+
+                <a class="btn reset-btn"
+                   href="{{ url_for('analysis_dashboard') }}">
+                    Reset
+                </a>
+
+            </form>
+
+        </section>
+
+
+        <!-- SUMMARY CARDS -->
+
+        <section class="summary-grid">
+
+            <div class="summary-card">
+                <h3>💰 Total Income</h3>
+                <p class="income">
+                    ₹{{ "%.2f"|format(total_income) }}
+                </p>
+            </div>
+
+            <div class="summary-card">
+                <h3>💸 Total Expenses</h3>
+                <p class="expense">
+                    ₹{{ "%.2f"|format(total_expenses) }}
+                </p>
+            </div>
+
+            <div class="summary-card">
+                <h3>💳 Balance</h3>
+                <p class="balance">
+                    ₹{{ "%.2f"|format(balance) }}
+                </p>
+            </div>
+
+            <div class="summary-card">
+                <h3>📈 Savings Rate</h3>
+                <p class="savings">
+                    {{ savings_rate }}%
+                </p>
+            </div>
+
+        </section>
+
+
+        <!-- FINANCIAL SUMMARY TABLE -->
+
+        <section class="table-card">
+
+            <h2>📋 Financial Summary</h2>
+
+            <div class="table-responsive">
+
+                <table class="analysis-table">
+
+                    <thead>
+                        <tr>
+                            <th>Financial Details</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        <tr>
+                            <td>Total Income</td>
+                            <td class="amount income">
+                                ₹{{ "%.2f"|format(total_income) }}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>Total Expenses</td>
+                            <td class="amount expense">
+                                ₹{{ "%.2f"|format(total_expenses) }}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>Remaining Balance</td>
+                            <td class="amount balance">
+                                ₹{{ "%.2f"|format(balance) }}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>Savings Rate</td>
+                            <td class="amount savings">
+                                {{ savings_rate }}%
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <!-- INCOME VS EXPENSES -->
+
+        <section class="chart-card">
+
+            <h2>📊 Income vs Expenses</h2>
+
+            <div class="chart-content">
+
+                {% if comparison_chart %}
+                    {{ comparison_chart | safe }}
+                {% else %}
+                    <p class="empty-message">
+                        No income or expense data available for this chart.
+                    </p>
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <!-- CATEGORY-WISE EXPENSES -->
+
+        <section class="chart-card">
+
+            <h2>📂 Category-wise Expenses</h2>
+
+            <div class="chart-content">
+
+                {% if category_chart %}
+                    {{ category_chart | safe }}
+                {% else %}
+                    <p class="empty-message">
+                        No expense category data available.
+                    </p>
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <!-- MONTHLY EXPENSES -->
+
+        <section class="chart-card">
+
+            <h2>📅 Monthly Expenses</h2>
+
+            <div class="chart-content">
+
+                {% if monthly_chart %}
+                    {{ monthly_chart | safe }}
+                {% else %}
+                    <p class="empty-message">
+                        No monthly expense data available.
+                    </p>
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <!-- MONTHLY INCOME, EXPENSES AND SAVINGS -->
+
+        <section class="chart-card">
+
+            <h2>📈 Monthly Income, Expenses and Savings</h2>
+
+            <div class="chart-content">
+
+                {% if income_expense_trend_chart %}
+                    {{ income_expense_trend_chart | safe }}
+                {% else %}
+                    <p class="empty-message">
+                        No monthly financial trend data available.
+                    </p>
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <!-- SALARY ANALYSIS -->
+
+        <section class="chart-card">
+
+            <h2>💰 Monthly Salary Analysis</h2>
+
+            {% if latest_salary is not none %}
+
+                <div class="salary-summary">
+
+                    <div class="salary-box">
+                        <h3>Latest Recorded Salary</h3>
+                        <p>
+                            ₹{{ "%.2f"|format(latest_salary) }}
+                        </p>
+                    </div>
+
+                    <div class="salary-box">
+                        <h3>Salary Change</h3>
+
+                        <p>
+                            {% if salary_change is not none %}
+                                ₹{{ "%.2f"|format(salary_change) }}
+                            {% else %}
+                                Not available
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <div class="salary-box">
+                        <h3>Salary Change Percentage</h3>
+
+                        <p>
+                            {% if salary_change_percent is not none %}
+                                {{ "%.2f"|format(salary_change_percent) }}%
+                            {% else %}
+                                Not available
+                            {% endif %}
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="chart-content">
+
+                    {% if salary_trend_chart %}
+                        {{ salary_trend_chart | safe }}
+                    {% else %}
+                        <p class="empty-message">
+                            Salary trend chart is not available.
+                        </p>
+                    {% endif %}
+
+                </div>
+
+            {% else %}
+
+                <p class="empty-message">
+                    Add an Income transaction with category
+                    <strong>Salary</strong> to view salary analysis.
+                </p>
+
+            {% endif %}
+
+        </section>
+
+
+        <!-- PERSONALIZED FINANCIAL INSIGHTS -->
+
+        <section class="chart-card">
+
+            <h2>💡 Personalized Financial Insights</h2>
+
+            {% if financial_insights %}
+
+                <ul class="financial-insights">
+
+                    {% for insight in financial_insights %}
+
+                        <li>{{ insight }}</li>
+
+                    {% endfor %}
+
+                </ul>
+
+            {% else %}
+
+                <p class="empty-message">
+                    No financial insights are available.
+                </p>
+
+            {% endif %}
+
+        </section>
+
+
+        <!-- FOOTER -->
+
+        <footer class="page-footer">
+
+            <p>
+                Home Budget Tracker | Financial Analysis Dashboard
+            </p>
+
+        </footer>
+
+    </div>
+
+</body>
+</html>

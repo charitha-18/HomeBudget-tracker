@@ -1,0 +1,121 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions | Home Budget</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        .transactions-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 25px;
+        }
+
+        .transactions-container h1 {
+            margin-bottom: 10px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin: 15px 0 25px;
+            text-decoration: none;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .transactions-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        .transactions-table th,
+        .transactions-table td {
+            padding: 14px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .transactions-table th {
+            background: #172554;
+            color: white;
+        }
+
+        .income {
+            color: green;
+            font-weight: bold;
+        }
+
+        .expense {
+            color: #dc2626;
+            font-weight: bold;
+        }
+
+        .empty-message {
+            padding: 25px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="transactions-container">
+
+        <h1>All Transactions</h1>
+        <p>View all your income and expenses in one place.</p>
+
+        <a href="{{ url_for('index') }}" class="back-link">
+            ← Back to Dashboard
+        </a>
+
+        <div class="table-wrapper">
+            <table class="transactions-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for transaction in transactions %}
+                    <tr>
+                        <td>{{ transaction.id }}</td>
+
+                        <td class="{{ transaction.type }}">
+                            {{ transaction.type|title }}
+                        </td>
+
+                        <td>{{ transaction.description }}</td>
+                        <td>{{ transaction.category or 'Other' }}</td>
+                        <td>₹{{ "%.2f"|format(transaction.amount|float) }}</td>
+                        <td>{{ transaction.transaction_date }}</td>
+                    </tr>
+
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="empty-message">
+                            No transactions found. Add a transaction from the dashboard.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+</body>
+</html>

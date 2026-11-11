@@ -1,0 +1,386 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Monthly Budget | Home Budget Tracker</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="budget-page">
+
+<div class="container">
+
+    <!-- PAGE HEADING -->
+    <header class="budget-header">
+        <div>
+            <h1>Monthly Budget Planner</h1>
+            <p class="subtitle">
+                Plan your spending, track your expenses, and stay within your budget.
+            </p>
+        </div>
+    </header>
+
+    <!-- NAVIGATION -->
+    <nav class="nav-links">
+        <a class="btn" href="{{ url_for('index') }}">Dashboard</a>
+
+        <a class="btn" href="{{ url_for('analysis_dashboard') }}">
+            Analysis
+        </a>
+    </nav>
+
+    <!-- SET MONTHLY BUDGET -->
+    <section class="form-card budget-form-card">
+
+        <h2>📅 Set Monthly Budget</h2>
+
+        <p class="section-description">
+            Select a month and enter the amount you plan to spend.
+        </p>
+
+        <form action="{{ url_for('budget_settings') }}" method="POST">
+
+            <div class="form-group">
+                <label for="month">Select Month</label>
+
+                <input
+                    type="month"
+                    id="month"
+                    name="month"
+                    value="{{ selected_month }}"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="budget_limit">Budget Amount (₹)</label>
+
+                <input
+                    type="number"
+                    id="budget_limit"
+                    name="budget_limit"
+                    placeholder="Enter budget amount"
+                    min="0.01"
+                    step="0.01"
+                    value="{{ budget_limit if budget_limit > 0 else '' }}"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="save-budget-btn">
+                Save Budget
+            </button>
+
+        </form>
+
+    </section>
+
+    <!-- SUMMARY CARDS -->
+    <section class="summary-cards">
+
+        <div class="card budget-summary-card">
+            <div class="summary-icon">🎯</div>
+
+            <h3>Monthly Budget</h3>
+
+            <p class="balance">
+                ₹{{ "%.2f"|format(budget_limit) }}
+            </p>
+        </div>
+
+        <div class="card budget-summary-card">
+            <div class="summary-icon">💸</div>
+
+            <h3>Total Expenses</h3>
+
+            <p class="expense">
+                ₹{{ "%.2f"|format(total_expenses) }}
+            </p>
+        </div>
+
+        <div class="card budget-summary-card">
+            <div class="summary-icon">💰</div>
+
+            <h3>Remaining Budget</h3>
+
+            <p class="{{ 'expense' if remaining < 0 else 'income' }}">
+                ₹{{ "%.2f"|format(remaining) }}
+            </p>
+        </div>
+
+    </section>
+
+    <!-- BUDGET PROGRESS -->
+    {% if budget_limit > 0 %}
+
+    <section class="form-card budget-progress-card">
+
+        <div class="section-title-row">
+            <div>
+                <h2>📊 Budget Usage</h2>
+
+                <p class="section-description">
+                    Track how much of your monthly budget has been spent.
+                </p>
+            </div>
+
+            <span class="usage-badge
+                {% if usage_percent >= 100 %}
+                    usage-danger
+                {% elif usage_percent >= 80 %}
+                    usage-warning
+                {% else %}
+                    usage-safe
+                {% endif %}">
+                {{ usage_percent }}% Used
+            </span>
+        </div>
+
+        <div class="budget-amount-row">
+            <span>
+                Spent:
+                <strong>₹{{ "%.2f"|format(total_expenses) }}</strong>
+            </span>
+
+            <span>
+                Budget:
+                <strong>₹{{ "%.2f"|format(budget_limit) }}</strong>
+            </span>
+        </div>
+
+        <div
+            class="progress-container"
+            role="progressbar"
+            aria-label="Monthly budget usage"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="{{ [usage_percent, 100]|min }}">
+
+            <div
+                class="progress-bar
+                    {% if usage_percent >= 100 %}
+                        over-budget
+                    {% elif usage_percent >= 80 %}
+                        near-budget
+                    {% endif %}"
+                style="width: {{ [usage_percent, 100]|min }}%;">
+            </div>
+
+        </div>
+
+        {% if total_expenses > budget_limit %}
+
+            <div class="budget-status status-danger">
+                <span class="status-icon">⚠️</span>
+
+                <div>
+                    <h3>Budget Exceeded!</h3>
+
+                    <p>
+                        You have exceeded your budget by
+                        <strong>
+                            ₹{{ "%.2f"|format(total_expenses - budget_limit) }}
+                        </strong>.
+                        Consider reducing your spending.
+                    </p>
+                </div>
+            </div>
+
+        {% elif total_expenses == budget_limit %}
+
+            <div class="budget-status status-warning">
+                <span class="status-icon">⚠️</span>
+
+                <div>
+                    <h3>Budget Limit Reached!</h3>
+
+                    <p>
+                        You have used your entire monthly budget.
+                    </p>
+                </div>
+            </div>
+
+        {% else %}
+
+            <div class="budget-status status-success">
+                <span class="status-icon">✅</span>
+
+                <div>
+                    <h3>Within Budget!</h3>
+
+                    <p>
+                        You still have
+                        <strong>
+                            ₹{{ "%.2f"|format(remaining) }}
+                        </strong>
+                        available to spend.
+                    </p>
+                </div>
+            </div>
+
+        {% endif %}
+
+    </section>
+
+    {% else %}
+
+    <section class="form-card budget-empty-card">
+
+        <div class="empty-budget-icon">🎯</div>
+
+        <h2>Set Your Monthly Budget</h2>
+
+        <p>
+            Enter a budget amount above to start tracking your spending.
+            Your progress and remaining balance will appear here.
+        </p>
+
+    </section>
+
+    {% endif %}
+
+    <!-- MONTHLY TRANSACTIONS -->
+    <section class="form-card transaction-heading">
+
+        <div class="section-title-row">
+            <div>
+                <h2>🧾 Monthly Transactions</h2>
+
+                <p class="section-description">
+                    Transactions recorded for {{ selected_month }}.
+                </p>
+            </div>
+
+            <span class="transaction-count">
+                {% if transactions %}
+                    {{ transactions|length }} Transactions
+                {% else %}
+                    0 Transactions
+                {% endif %}
+            </span>
+        </div>
+
+        <div class="budget-table-container">
+
+            <table class="budget-table">
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% if transactions %}
+
+                        {% for transaction in transactions %}
+
+                        <tr>
+
+                            <td>{{ transaction.id }}</td>
+
+                            <td class="transaction-description">
+                                {{ transaction.description or 'No description' }}
+                            </td>
+
+                            <td>
+                                <span class="category-badge">
+                                    {{ transaction.category or 'Uncategorized' }}
+                                </span>
+                            </td>
+
+                            <td>
+                                {% if transaction.type|lower == 'expense' %}
+
+                                    <span class="type-badge type-expense">
+                                        Expense
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="type-badge type-income">
+                                        Income
+                                    </span>
+
+                                {% endif %}
+                            </td>
+
+                            <td class="transaction-amount">
+                                ₹{{ "%.2f"|format(transaction.amount) }}
+                            </td>
+
+                            <td>{{ transaction.transaction_date }}</td>
+
+                            <td>
+                                <form
+                                    class="transaction-delete-form"
+                                    action="{{ url_for('delete_transaction', transaction_id=transaction.id) }}"
+                                    method="POST"
+                                    onsubmit="return confirm('Are you sure you want to delete this transaction?');">
+
+                                    <input
+                                        type="hidden"
+                                        name="month"
+                                        value="{{ selected_month }}"
+                                    >
+
+                                    <button
+                                        type="submit"
+                                        class="delete-btn">
+                                        Delete
+                                    </button>
+
+                                </form>
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    {% else %}
+
+                        <tr>
+                            <td colspan="7" class="empty-message">
+                                <div class="empty-table-icon">📭</div>
+
+                                <strong>No transactions found</strong>
+
+                                <p>
+                                    There are no transactions recorded for
+                                    {{ selected_month }}.
+                                </p>
+                            </td>
+                        </tr>
+
+                    {% endif %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="page-footer">
+        <p>Home Budget Tracker · Plan Smart. Spend Wisely. 💚</p>
+    </footer>
+
+</div>
+
+</body>
+</html>

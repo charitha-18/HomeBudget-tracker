@@ -1,0 +1,546 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Compare Months | Home Budget Tracker</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f1f5f9;
+            color: #172554;
+        }
+
+        /* NAVIGATION */
+
+        .navbar {
+            background: linear-gradient(120deg, #0f172a, #1e3a8a);
+            color: white;
+            padding: 18px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.18);
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: #e8edf7;
+            text-decoration: none;
+            padding: 10px 13px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        .nav-links .logout-btn {
+            background: #dc2626;
+            color: white;
+        }
+
+        .nav-links .logout-btn:hover {
+            background: #b91c1c;
+        }
+
+        /* MAIN CONTAINER */
+
+        .container {
+            max-width: 1400px;
+            margin: auto;
+            padding: 35px 25px;
+        }
+
+        .heading {
+            margin-bottom: 28px;
+        }
+
+        .heading h1 {
+            font-size: 32px;
+            font-weight: 800;
+            color: #14213d;
+            margin-bottom: 8px;
+        }
+
+        .heading p {
+            color: #718096;
+            font-size: 15px;
+        }
+
+        /* COMMON CARDS */
+
+        .card,
+        .month-card {
+            background: white;
+            padding: 25px;
+            border-radius: 18px;
+            border: none;
+            box-shadow: 0 5px 22px rgba(15, 23, 42, 0.055);
+            margin-bottom: 25px;
+        }
+
+        .card h2,
+        .month-card h2 {
+            color: #14213d;
+            font-size: 21px;
+            font-weight: 750;
+            margin-bottom: 20px;
+        }
+
+        /* MONTH FORM */
+
+        .month-form {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+            gap: 18px;
+            align-items: end;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 9px;
+            color: #334155;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #d5deeb;
+            border-radius: 9px;
+            font-size: 14px;
+            background: white;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        button {
+            padding: 13px 20px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 9px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+        }
+
+        /* COMPARISON CARDS */
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 22px;
+            margin-bottom: 25px;
+        }
+
+        .month-card {
+            margin-bottom: 0;
+            border-top: 5px solid #2563eb;
+            transition: transform 0.25s ease,
+                        box-shadow 0.25s ease;
+        }
+
+        .month-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.10);
+        }
+
+        .month-card h2 {
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eef2f7;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 0;
+            border-bottom: 1px solid #eef2f7;
+        }
+
+        .metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric span {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .metric strong {
+            font-size: 15px;
+            text-align: right;
+            overflow-wrap: anywhere;
+        }
+
+        .income {
+            color: #059669;
+        }
+
+        .expense {
+            color: #dc2626;
+        }
+
+        .balance {
+            color: #2563eb;
+        }
+
+        /* EXPENSE COMPARISON */
+
+        .message {
+            background: #eff6ff;
+            border-left: 5px solid #2563eb;
+            padding: 22px;
+            border-radius: 12px;
+            line-height: 1.8;
+        }
+
+        .message p {
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .message p:last-child {
+            margin-bottom: 0;
+        }
+
+        .message strong {
+            color: #1e3a8a;
+            font-size: 16px;
+        }
+
+        /* FOOTER */
+
+        .footer {
+            text-align: center;
+            padding: 25px;
+            color: #718096;
+            margin-top: 25px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+
+        /* RESPONSIVE */
+
+        @media (max-width: 900px) {
+            .month-form {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .month-form button {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (max-width: 650px) {
+            .navbar {
+                padding: 18px;
+            }
+
+            .brand {
+                font-size: 20px;
+            }
+
+            .nav-links a {
+                padding: 9px;
+                font-size: 12px;
+            }
+
+            .container {
+                padding: 20px 14px;
+            }
+
+            .heading h1 {
+                font-size: 26px;
+            }
+
+            .month-form,
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .month-form button {
+                width: 100%;
+            }
+
+            .card,
+            .month-card {
+                padding: 18px;
+            }
+
+            .metric {
+                align-items: flex-start;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <!-- NAVIGATION -->
+
+    <nav class="navbar">
+
+        <div class="brand">💰 Home Budget Tracker</div>
+
+        <div class="nav-links">
+
+            <a href="{{ url_for('index') }}">Dashboard</a>
+
+            <a href="{{ url_for('transactions_page') }}">Transactions</a>
+
+            <a href="{{ url_for('analysis_dashboard') }}">Analysis</a>
+
+            <a href="{{ url_for('budget_settings') }}">Monthly Budget</a>
+
+            <a href="{{ url_for('compare_months') }}" class="active">
+                Compare Months
+            </a>
+
+            <a href="{{ url_for('category_budgets') }}">Category Budgets</a>
+
+            <a href="{{ url_for('smart_budget') }}">Smart Budget</a>
+
+            <a href="{{ url_for('grocery_manager') }}">Grocery Manager</a>
+
+            <a href="{{ url_for('money_planner') }}">Money Planner</a>
+
+            <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+
+        </div>
+
+    </nav>
+
+
+    <main class="container">
+
+        <!-- PAGE HEADING -->
+
+        <header class="heading">
+
+            <h1>📊 Monthly Comparison</h1>
+
+            <p>
+                Compare your income, expenses, balance, and budget across two months.
+            </p>
+
+        </header>
+
+
+        <!-- MONTH SELECTION -->
+
+        <section class="card">
+
+            <h2>📅 Select Two Months</h2>
+
+            <form
+                class="month-form"
+                action="{{ url_for('compare_months') }}"
+                method="GET"
+            >
+
+                <div class="form-group">
+
+                    <label for="month1">First Month</label>
+
+                    <input
+                        type="month"
+                        id="month1"
+                        name="month1"
+                        value="{{ month1 }}"
+                        required
+                    >
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="month2">Second Month</label>
+
+                    <input
+                        type="month"
+                        id="month2"
+                        name="month2"
+                        value="{{ month2 }}"
+                        required
+                    >
+
+                </div>
+
+                <button type="submit">
+                    Compare Months
+                </button>
+
+            </form>
+
+        </section>
+
+
+        <!-- MONTH COMPARISON CARDS -->
+
+        <section class="comparison-grid">
+
+            {% for item in comparison %}
+
+            <article class="month-card">
+
+                <h2>📅 {{ item.month }}</h2>
+
+                <div class="metric">
+
+                    <span>Total Income</span>
+
+                    <strong class="income">
+                        ₹{{ "%.2f"|format(item.total_income) }}
+                    </strong>
+
+                </div>
+
+                <div class="metric">
+
+                    <span>Total Expenses</span>
+
+                    <strong class="expense">
+                        ₹{{ "%.2f"|format(item.total_expenses) }}
+                    </strong>
+
+                </div>
+
+                <div class="metric">
+
+                    <span>Net Balance</span>
+
+                    <strong class="{{ 'income' if item.balance >= 0 else 'expense' }}">
+                        ₹{{ "%.2f"|format(item.balance) }}
+                    </strong>
+
+                </div>
+
+                <div class="metric">
+
+                    <span>Monthly Budget</span>
+
+                    <strong class="balance">
+                        ₹{{ "%.2f"|format(item.budget_limit) }}
+                    </strong>
+
+                </div>
+
+                <div class="metric">
+
+                    <span>Budget Remaining</span>
+
+                    <strong class="{{ 'income' if item.remaining_budget >= 0 else 'expense' }}">
+                        ₹{{ "%.2f"|format(item.remaining_budget) }}
+                    </strong>
+
+                </div>
+
+            </article>
+
+            {% endfor %}
+
+        </section>
+
+
+        <!-- EXPENSE COMPARISON -->
+
+        <section class="card">
+
+            <h2>📈 Expense Comparison</h2>
+
+            <div class="message">
+
+                <p>
+                    <strong>{{ expense_message }}</strong>
+                </p>
+
+                {% if expense_difference > 0 %}
+
+                    <p class="expense">
+
+                        Your expenses increased by
+                        ₹{{ "%.2f"|format(expense_difference) }}
+                        in the second selected month.
+
+                    </p>
+
+                {% elif expense_difference < 0 %}
+
+                    <p class="income">
+
+                        Your expenses decreased by
+                        ₹{{ "%.2f"|format(expense_difference|abs) }}
+                        in the second selected month.
+
+                    </p>
+
+                {% else %}
+
+                    <p class="balance">
+                        Your expenses were equal in both months.
+                    </p>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <!-- FOOTER -->
+
+        <footer class="footer">
+
+            <p>
+                Home Budget Tracker | Plan Smart. Spend Wisely. 💚
+            </p>
+
+        </footer>
+
+    </main>
+
+</body>
+</html>

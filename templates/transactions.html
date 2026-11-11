@@ -1,0 +1,421 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions | Home Budget Tracker</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f1f5f9;
+            color: #172554;
+        }
+
+        .navbar {
+            background: linear-gradient(120deg, #0f172a, #1e3a8a);
+            color: white;
+            padding: 18px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.18);
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .nav-links a {
+            color: #e8edf7;
+            text-decoration: none;
+            padding: 10px 13px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        .nav-links .logout-btn {
+            background: #dc2626;
+            color: white;
+        }
+
+        .transactions-container {
+            max-width: 1400px;
+            margin: 35px auto;
+            padding: 25px;
+        }
+
+        .page-heading {
+            margin-bottom: 25px;
+        }
+
+        .page-heading h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: #14213d;
+        }
+
+        .page-heading p {
+            color: #718096;
+            font-size: 15px;
+        }
+
+        .panel {
+            background: white;
+            padding: 25px;
+            border-radius: 18px;
+            box-shadow: 0 5px 22px rgba(15, 23, 42, 0.055);
+            border: 1px solid #e9edf5;
+        }
+
+        .panel-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .panel-heading h2 {
+            font-size: 21px;
+        }
+
+        .search-box {
+            width: 280px;
+            max-width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #d5deeb;
+            border-radius: 9px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .search-box:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .transactions-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+
+        .transactions-table thead {
+            background: #1e3a8a;
+            color: white;
+        }
+
+        .transactions-table th,
+        .transactions-table td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid #e9edf5;
+        }
+
+        .transactions-table th {
+            font-size: 13px;
+            letter-spacing: 0.3px;
+        }
+
+        .transactions-table td {
+            font-size: 14px;
+        }
+
+        .transactions-table tbody tr {
+            transition: background 0.2s;
+        }
+
+        .transactions-table tbody tr:hover {
+            background: #eff6ff;
+        }
+
+        .type-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .income-badge {
+            background: #d1fae5;
+            color: #047857;
+        }
+
+        .expense-badge {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .income {
+            color: #059669;
+            font-weight: 800;
+        }
+
+        .expense {
+            color: #dc2626;
+            font-weight: 800;
+        }
+
+        .transaction-id {
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .empty-message {
+            padding: 35px !important;
+            text-align: center !important;
+            color: #718096;
+        }
+
+        .back-button {
+            display: inline-block;
+            margin-top: 22px;
+            padding: 11px 18px;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            border-radius: 9px;
+            font-weight: 700;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .back-button:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+        }
+
+        .footer {
+            text-align: center;
+            color: #718096;
+            padding: 25px;
+            margin-top: 25px;
+        }
+
+        @media (max-width: 700px) {
+            .navbar {
+                padding: 18px;
+            }
+
+            .transactions-container {
+                padding: 16px;
+                margin: 20px auto;
+            }
+
+            .page-heading h1 {
+                font-size: 26px;
+            }
+
+            .panel {
+                padding: 16px;
+            }
+
+            .panel-heading {
+                align-items: stretch;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVIGATION -->
+    <nav class="navbar">
+
+        <div class="brand">💰 Home Budget Tracker</div>
+
+        <div class="nav-links">
+
+            <a href="{{ url_for('index') }}">Dashboard</a>
+
+            <a href="{{ url_for('transactions_page') }}" class="active">
+                Transactions
+            </a>
+
+            <a href="{{ url_for('analysis_dashboard') }}">Analysis</a>
+
+            <a href="{{ url_for('budget_settings') }}">Monthly Budget</a>
+
+            <a href="{{ url_for('compare_months') }}">Compare Months</a>
+
+            <a href="{{ url_for('category_budgets') }}">Category Budgets</a>
+
+            <a href="{{ url_for('smart_budget') }}">Smart Budget</a>
+
+            <a href="{{ url_for('grocery_manager') }}">Grocery Manager</a>
+
+            <a href="{{ url_for('money_planner') }}">Money Planner</a>
+
+            <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+
+        </div>
+
+    </nav>
+
+    <main class="transactions-container">
+
+        <!-- HEADING -->
+        <header class="page-heading">
+            <h1>📋 All Transactions</h1>
+            <p>View and manage all your income and expenses in one place.</p>
+        </header>
+
+        <!-- TRANSACTIONS TABLE -->
+        <section class="panel">
+
+            <div class="panel-heading">
+
+                <h2>Transaction History</h2>
+
+                <input
+                    type="text"
+                    id="transactionSearch"
+                    class="search-box"
+                    placeholder="🔍 Search transactions..."
+                    onkeyup="searchTransactions()"
+                >
+
+            </div>
+
+            <div class="table-wrapper">
+
+                <table class="transactions-table" id="transactionsTable">
+
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for transaction in transactions %}
+
+                        <tr>
+
+                            <td class="transaction-id">
+                                #{{ transaction.id }}
+                            </td>
+
+                            <td>
+                                {% if transaction.type|string|lower == 'income' %}
+                                    <span class="type-badge income-badge">
+                                        Income
+                                    </span>
+                                {% else %}
+                                    <span class="type-badge expense-badge">
+                                        Expense
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td>{{ transaction.description }}</td>
+
+                            <td>{{ transaction.category or 'Other' }}</td>
+
+                            <td class="{% if transaction.type|string|lower == 'income' %}income{% else %}expense{% endif %}">
+                                ₹{{ "%.2f"|format(transaction.amount|float) }}
+                            </td>
+
+                            <td>{{ transaction.transaction_date }}</td>
+
+                        </tr>
+
+                        {% else %}
+
+                        <tr>
+                            <td colspan="6" class="empty-message">
+                                <h3>No Transactions Found</h3>
+                                <p>You haven't added any transactions yet.</p>
+                                <p>Start by adding income or expenses from your dashboard.</p>
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+           
+
+        </section>
+
+        <footer class="footer">
+            <p>Home Budget Tracker | Manage your money smartly.</p>
+        </footer>
+
+    </main>
+
+    <!-- SEARCH FUNCTION -->
+    <script>
+
+        function searchTransactions() {
+
+            const input = document.getElementById("transactionSearch");
+            const filter = input.value.toLowerCase();
+
+            const table = document.getElementById("transactionsTable");
+            const rows = table.getElementsByTagName("tr");
+
+            for (let i = 1; i < rows.length; i++) {
+
+                const rowText = rows[i].textContent.toLowerCase();
+
+                rows[i].style.display =
+                    rowText.includes(filter) ? "" : "none";
+
+            }
+
+        }
+
+    </script>
+
+</body>
+</html>
